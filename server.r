@@ -1,571 +1,207 @@
-addpkg('corrplot','0.73-r30')
-library(corrplot)
-addpkg('rHighcharts','1.0-r30')
-library(rHighcharts)
-source('r/roboadv/PortfolioOptimiser.R')
-source('r/roboadv/userdifPF.R')
-ret<-0
 shinyServer(function(input,output,session){
-  
-  
-  
-    
-  
- # print(pflist[[1]]$historicalPF$tangency.pf$weights)
-  
-  
-  #output$choice<-renderUI({
-   # ind<-1
-   # inde<-list(ind)
-   # pflist[[length(pflist)+1]]<-buildNewPortfolio(input$stock,input$date)
-    #while(ind<=length(pflist))
-   # {
-   #   ind<-ind+1
-   #   inde[[length(inde)+1]]<-ind
-   # }
-   # selectInput('placeholder','Created Portfolio',choices=inde)
-    
-  #})
-  
-  #createf<-function(n)
-  #{
-    #if(is.null(n))
-    #{
-      
-   # }
-    #else
-    #{
-    #  pflist[[length(pflist)+1]]<-buildNewPortfolio(n)
-    #  print('laud')
-     # print(pflist[[2]]$tickerList)
-    #}
-    
-  #}
-  #create<-reactive({
-   #  createf(input$stock)
- # })
-  
-  
-  output$types <- renderChart({
-    
-    
-    #pflist[[length(pflist)+1]]<-buildNewPortfolio(input$stock,input$date)
-    #currentpfindex<-as.numeric(input$placeholder)
-    pf<-buildNewPortfolio(input$stock,input$date)
-    
-   if(input$type==1)
-   {
-     a <- rHighcharts:::Chart$new()
-     
-     a$data(x = pf$tickerList, y =  as.numeric(pf$historicalPF$tangency.pf$weights), type = "pie", name = "Percent",size=150)
-     a$title(text = "Portfolio")
-     a$subtitle(text = "Weight Distribution")
-   }   
-    if(input$type==2)
+
+  output$leadershipScore<-renderChart({
+    if(input$symb=="ola"||input$symb=="OLA")
     {
-      #only plot
-      a <- rHighcharts:::Chart$new()
-      a$title(text = "Portfolio")
-      a$subtitle(text = "Weight Distribution")
-      a$data(x = pf$tickerList, y =  as.numeric(pf$historicalPF$tangency.pf$weights), type = "pie", name = "Percent",size=150)
-      return(a)
-      #print(pf$tickerList)
-      #print(as.numeric(pf$historicalPF$tangency.pf$weights))
-    }
-    else if(input$type==3)
-    {
-      pf<-capmAnalysis(pf)
-      a <- rHighcharts:::Chart$new()
-      a$title(text = "Portfolio")
-      a$subtitle(text = "Weight Distribution")
-      a$data(x = pf$tickerList, y =  as.numeric(pf$historicalPF$tangency.pf$weights), type = "pie", name = "Percent",size=150)
-      return(a)
-    }
-    else if(input$type==4)
-    {
-      pf<-cvarAnalysis.tan(pf,'LongOnly')
-      a <- rHighcharts:::Chart$new()
-      a$title(text = "Portfolio")
-      a$subtitle(text = "Weight Distribution")
-      a$data(x = pf$tickerList, y =  as.numeric(getWeights(pf$cvarPF$tanpf[[1]])), type = "pie", name = "Percent",size=150)
-      return(a)
-    }
-    else if(input$type==5)
-    {
-      pf<-cvarAnalysis.minRisk(pf,'LongOnly')
-      a <- rHighcharts:::Chart$new()
-      a$title(text = "Portfolio")
-      a$subtitle(text = "Weight Distribution")
-      a$data(x = pf$tickerList, y =  as.numeric(getWeights(pf$cvarPF$minRiskpf[[1]])), type = "pie", name = "Percent",size=150)
-      return(a)
-    }
-    else if(input$type==6)
-    {
-      #pf<-mfmAnalysis(pf)
-      #pf$tickerList
-      #as.numeric(pf$mfmPF$rmodel.pf)
-      pf<-mfmAnalysis(pf)
-      a <- rHighcharts:::Chart$new()
-      a$title(text = "Portfolio")
-      a$subtitle(text = "Weight Distribution")
-      a$data(x = pf$tickerList, y = as.numeric(pf$mfmPF$rmodel.pf) , type = "pie", name = "Percent",size=150)
-      return(a)
-    }
-    
-  })
- 
-  
- output$table <- renderTable({
-   
-   
-   pf<-buildNewPortfolio(input$stock,input$date)
-   
-   
-   
-   if(input$type==1)
-   {
-     
-   }   
-   if(input$type==2)
-   {
-     data.frame(Security=pf$tickerList,Weight=as.numeric(pf$historicalPF$tangency.pf$weights))
-     
-     #print(pf$tickerList)
-     #print(as.numeric(pf$historicalPF$tangency.pf$weights))
-   }
-   else if(input$type==3)
-   {
-     pf<-capmAnalysis(pf)
-     data.frame(Security=pf$tickerList,Weight=as.numeric(pf$historicalPF$tangency.pf$weights))
-     
-   }
-   else if(input$type==4)
-   {
-     pf<-cvarAnalysis.tan(pf,'LongOnly')
-     data.frame(Security=pf$tickerList,Weight=as.numeric(getWeights(pf$cvarPF$tanpf[[1]])))
-     
-   }
-   else if(input$type==5)
-   {
-     pf<-cvarAnalysis.minRisk(pf,'LongOnly')
-     data.frame(Security=pf$tickerList,Weight=as.numeric(getWeights(pf$cvarPF$minRiskpf[[1]])))
-     
-   }
-   
-   
-   
- })
-  output$hist5<-renderUI({
-    
-    if(input$type==6)
-    {
-      img(src="RvsHR.png")
-      
+      i<-1
+      for(person in olafounders)
+      {
+        #scores the education
+        educationScore<-((person$education.level)/
+                           (person$education.brand ))*(person$education.relevance ) #relevance, brand - keep from 0.1 to 1
+        
+        workScore<-0
+        for(job in person$education.experience)
+        {
+          #scores the work experience
+          workScore<- workScore + (((job['years']/job['brand'])/job['role'])*job['relevance'])
+        }
+        
+        compositeScore<- educationScore + workScore;
+        leaders[[i]]<-compositeScore
+        i<-i+1
+        
+      }
     }
     else
     {
-      print("")
+      i<-1
+      for(person in uberfounders)
+      {
+        #scores the education
+        educationScore<-((person$education.level)/
+                           (person$education.brand ))*(person$education.relevance ) #relevance, brand - keep from 0.1 to 1
+        
+        workScore<-0
+        for(job in person$education.experience)
+        {
+          #scores the work experience
+          workScore<- workScore + (((job['years']/job['brand'])/job['role'])*job['relevance'])
+        }
+        
+        compositeScore<- educationScore + workScore;
+        leaders[[i]]<-compositeScore
+        i<-i+1
+      }
     }
     
+    b <- rHighcharts:::Chart$new()
+    b$title(text = "Leadership Score")
+    b$subtitle(text = input$symb)
+    b$data(x = leadershipkey, y =  leaders, type = "column", name = "Leadership Score",color="#100146")
+    return(b)
     
   })
-   output$hist1<-renderImage({
-    pf<-buildNewPortfolio(input$stock,input$date)
+  
+  output$piechart<-renderChart({
+    if(input$symb=="ola"||input$symb=="OLA")
+    {
+      cvek <- c('Ola','Uber','Meru','Others')
+      value = c(70,12,10,8)
+    }
+    else
+    {
+      cvek <- c('Uber','BlaBlaCar','Cabify','Easy Taxi','FlyWheel Software',
+                'Gett','Hailo','LeCab','Lyft','Ola','TaxiCode','Zoomcar','Others')
+      value = c(50,20,5,1,1,10,5,3,20,20,2,4,5)
+    }
     
-    ret.mat = listtomat(pf$returnList , pf$tickerList)
-    #png("www/creturn.png", width = 400, height = 300)
-    outfile <- tempfile(fileext='.png')
-    png(outfile, width=400, height=300)
-      
-    chart.Correlation(ret.mat)
-    dev.off()
-    #img(src="creturn.png")
-    list(src = outfile,
-         width = 400,
-         height = 300,
-         alt = "This is alternate text")
+    b <- rHighcharts:::Chart$new()
+    b$title(text = "Market Share with Competitors")
+    b$subtitle(text = input$symb)
+    b$data(x = cvek, y =  value, type = "pie", name = "Market Share with Competitors")
+    return(b)
     
-  },deleteFile=TRUE)
- 
- output$hist2<-renderImage({
-   pf<-buildNewPortfolio(input$stock,input$date)
-   
-   ret.mat = listtomat(pf$returnList , pf$tickerList)
-   #png("www/creturn.png", width = 400, height = 300)
-   outfile <- tempfile(fileext='.png')
-   png(outfile, width=400, height=300)
-   
-   chart.CumReturns(ret.mat , wealth.index=TRUE , main = '' , begin = 'axis' , legend.loc = 'topleft')
-   dev.off()
-   #img(src="creturn.png")
-   list(src = outfile,
-        width = 400,
-        height = 300,
-        alt = "This is alternate text")
-   
- },deleteFile=TRUE)
- 
- output$hist3<-renderImage({
-   pf<-buildNewPortfolio(input$stock,input$date)
-   
-   ret.mat = listtomat(pf$returnList , pf$tickerList)
-   #png("www/creturn.png", width = 400, height = 300)
-   outfile <- tempfile(fileext='.png')
-   png(outfile, width=400, height=300)
-   
-   rownames(pf$historicalPF$corrMatrix)<-pf$tickerList
-   
-   colnames(pf$historicalPF$corrMatrix)<-pf$tickerList
-   corrplot(pf$historicalPF$corrMatrix  , type= 'upper' , order = 'hclust' , tl.col = 'black' , tl.srt =45)
-   dev.off()
-   #img(src="creturn.png")
-   list(src = outfile,
-        width = 400,
-        height = 300,
-        alt = "This is alternate text")
-   
- },deleteFile=TRUE)
- 
- output$hist4<-renderImage({
-   pf<-buildNewPortfolio(input$stock,input$date)
-   
-   ret.mat = listtomat(pf$returnList , pf$tickerList)
-   #png("www/creturn.png", width = 400, height = 300)
-   outfile <- tempfile(fileext='.png')
-   png(outfile, width=400, height=300)
-   
-   plot.Markowitz(pf$historicalPF$ef , col = 'red' , pch = 22 )
-   dev.off()
-   #img(src="creturn.png")
-   list(src = outfile,
-        width = 400,
-        height = 300,
-        alt = "This is alternate text")
-   
- },deleteFile=TRUE)
- 
+  })
+  output$marketshare <- renderGvis({
+    if(input$symb=="ola"||input$symb=="OLA")
+    {
+      geodata<-olageo
+    }
+    else
+    {
+      geodata<-ubergeo
+    }
+    
+    gvisGeoChart(geodata, locationvar="Country", 
+                 colorvar="Share",options=list(colors="['#cbb69d', '#603913', '#c69c6e']"))     
+  })
+  
+  output$totalSentiment<-renderText({
+    
+    if(input$symb=="ola"||input$symb=="OLA")
+    {
+      (mean(meta(score(olanews))[[5]]))*1000
+    }
+    else
+    {
+      (mean(meta(score(ubernews))[[5]]))*1000
+    }
+  })
+  
+  output$value<-renderText({
+    if(input$symb=="ola"||input$symb=="OLA")
+    {
+      "4,823,452,734"
+    }
+    else
+    {
+      "32,815,862,581"
+    }
+  })
+  
+  output$senti <- renderChart({
+    if(input$symb=="OLA"||input$symb=="ola")
+    {
+      meta<-meta(score(olanews))
+      key<-1:4
+    }
+    else
+    {
+      meta<-meta(score(ubernews))
+      key<-1:10
+    }
+    
+    # hist(meta[[6]],col="darkgoldenrod1",main="News Sentiment")
+    b <- rHighcharts:::Chart$new()
+    b$title(text = "Public Sentiment for the Startup")
+    b$subtitle(text = input$symb)
+    b$data(x = key, y =  meta[[5]], type = "column", name = "Sentiment Factor",color="#fed136")
+    return(b)
+    
+  })
+  output$sentimentgauge <- renderGvis({
+    
+    if(input$symb=="ola"||input$symb=="OLA")
+    {
+      popularity<-(mean(meta(score(olanews))[[5]]))*1000
+    }
+    else
+    {
+      popularity<-(mean(meta(score(ubernews))[[5]]))*1000
+    }
+    compPop<-data.frame(company= input$symb, popularity=popularity)
+    
+    gvisGauge(compPop, 
+              options=list(min=0, max=100, greenFrom=66,
+                           greenTo=100, yellowFrom=33, yellowTo=66,
+                           redFrom=0, redTo=33, width=300, height=300))     
+  })
+  
   output$newsitem<-renderText({
     
-    if(input$symb=="MS"||input$symb=="ms")
+    if(input$symb=="ola"||input$symb=="OLA")
     {
       num<-as.numeric(input$news)
-      MSNews[[num]]
-    }
-    else if(input$symb=="AAPL"||input$symb=="aapl")
-    {
-      num<-as.numeric(input$news)
-      AAPLNews[[num]]
-    }
-    else if(input$symb=="GOOG"||input$symb=="goog")
-    {
-      num<-as.numeric(input$news)
-      GOOGNews[[num]]
-    }
-    else if(input$symb=="GS"||input$symb=="gs")
-    {
-      num<-as.numeric(input$news)
-      GSNews[[num]]
-    }
-    else if(input$symb=="IBM"||input$symb=="ibm")
-    {
-      num<-as.numeric(input$news)
-      IBMNews[[num]]
-    }
-    else if(input$symb=="TWC"||input$symb=="twc")
-    {
-      num<-as.numeric(input$news)
-      TWCNews[[num]]      
-    }
-    else if(input$symb=="RIG"||input$symb=="rig")
-    {
-      num<-as.numeric(input$news)
-      RIGNews[[num]]
-    }
-    else if(input$symb=="VZ"||input$symb=="vz")
-    {
-      num<-as.numeric(input$news)
-      VZNews[[num]]
+      content(olanews[[num]])
     }
     else
     {
       num<-as.numeric(input$news)
-      GSNews[[num]]
+      content(ubernews[[num]])
     }
   })
-  output$senti <- renderChart({
-    if(input$symb=="MS"||input$symb=="ms")
+  
+  output$financial<-renderChart({
+    
+    if(input$symb=="ola"||input$symb=="OLA")
     {
-      meta<-meta(score(MSNews))
-      
-    }
-    else if(input$symb=="AAPL"||input$symb=="aapl")
-    {
-      meta<-meta(score(AAPLNews))
-      
-    }
-    else if(input$symb=="GOOG"||input$symb=="goog")
-    {
-      meta<-meta(score(GOOGNews))
-      
-    }
-    else if(input$symb=="GS"||input$symb=="gs")
-    {
-      meta<-meta(score(GSNews))
-      
-    }
-    else if(input$symb=="IBM"||input$symb=="ibm")
-    {
-      meta<-meta(score(IBMNews))
-      
-    }
-    else if(input$symb=="TWC"||input$symb=="twc")
-    {
-      meta<-meta(score(TWCNews))
-      
-    }
-    else if(input$symb=="RIG"||input$symb=="rig")
-    {
-      meta<-meta(score(RIGNews))
-      
-    }
-    else if(input$symb=="VZ"||input$symb=="vz")
-    {
-      meta<-meta(score(VZNews))
-      
+      xaxis= ola_1
+      yaxis=ola_2
     }
     else
     {
-      meta<-meta(score(AAPLNews))
-      
+      xaxis= uber_1
+      yaxis=uber_2
     }
-   # hist(meta[[6]],col="darkgoldenrod1",main="News Sentiment")
-   b <- rHighcharts:::Chart$new()
-   b$title(text = "Public Sentiment for the Asset")
-   b$subtitle(text = input$symb)
-   b$data(x = key, y =  meta[[6]], type = "column", name = "Sentiment Factor",color="#fed136")
-   return(b)
-      
+    fin <- rHighcharts:::Chart$new()
+    fin$title(text = input$symb)
+    fin$subtitle(text = "Previous rounds of investment")
+    fin$data(x = xaxis, y =  yaxis, type = "line", name = "Amount invested(in million USD)",color="#100146")
+    return(fin)
   })
-  
-  output$sectornewsitem <- renderText({
-    if(input$sector==1)
-    { 
-      num<-as.numeric(input$news1)
-      discretionaryNews[[num]]
-      
-    }
-    else if(input$sector==2)
+
+  output$downloads<-renderText({
+    if(input$symb=="ola"||input$symb=="OLA")
     {
-      num<-as.numeric(input$news1)
-      staplesNews[[num]]
-      
-    }
-    else if(input$sector==3)
-    {
-      num<-as.numeric(input$news1)
-      energyNews[[num]]
-      
-    }
-    else if(input$sector==4)
-    {
-      num<-as.numeric(input$news1)
-      financialNews[[num]]
-      
-    }
-    else if(input$sector==5)
-    {
-      num<-as.numeric(input$news1)
-      healthNews[[num]]
-      
-    }
-    else if(input$sector==6)
-    {
-      num<-as.numeric(input$news1)
-      industrialNews[[num]]
-      
-    }
-    else if(input$sector==7)
-    {
-      num<-as.numeric(input$news1)
-      technologyNews[[num]]
-      
-    }
-    else if(input$sector==8)
-    {
-      num<-as.numeric(input$news1)
-      materialsNews[[num]]
-      
-    }
-    else if(input$sector==9)
-    {
-      num<-as.numeric(input$news1)
-      telecomNews[[num]]
-      
+      "10 million"
     }
     else
     {
-      num<-as.numeric(input$news1)
-      utilitiesNews[[num]]
-      
+      "100 million"
     }
-    # hist(meta[[6]],col="darkgoldenrod1",main="News Sentiment")
     
-    
-  })	
-    
- output$sectorsenti<-renderChart({
-   
-   if(input$sector==1)
-   {
-     meta<-meta(score(discretionaryNews))
-     
-   }
-   else if(input$sector==2)
-   {
-     meta<-meta(score(staplesNews))
-     
-   }
-   else if(input$sector==3)
-   {
-     meta<-meta(score(energyNews))
-     
-   }
-   else if(input$sector==4)
-   {
-     meta<-meta(score(financialNews))
-     
-   }
-   else if(input$sector==5)
-   {
-     meta<-meta(score(healthNews))
-     
-   }
-   else if(input$sector==6)
-   {
-     meta<-meta(score(industrialNews))
-     
-   }
-   else if(input$sector==7)
-   {
-     meta<-meta(score(technologyNews))
-     
-   }
-   else if(input$sector==8)
-   {
-     meta<-meta(score(materialsNews))
-     
-   }
-   else if(input$sector==9)
-   {
-     meta<-meta(score(telecomNews))
-     
-   }
-   else
-   {
-     meta<-meta(score(utilitiesNews))
-     
-   }
-   b <- rHighcharts:::Chart$new()
-   b$title(text = "Public Sentiment for Sector")
-   b$subtitle(text = "")
-   b$data(x = c(1:30), y =  meta[[6]], type = "column", name = "Sentiment Factor",color="#222")
-   return(b)
- })
+  })
   
-  feddata <- getSymbols('DFF', src = "FRED",
-                        auto.assign = FALSE)
-  feddata<-feddata["2015/"]
-  change<-as.numeric(feddata[length(feddata)])-as.numeric(feddata[length(feddata)-1])
-  i1<-length(feddata)
-  i2<-length(feddata)-1
-  while(change==0){
-    i1<-i1-1
-    i2<-i2-1
-    change<-as.numeric(feddata[i1])-as.numeric(feddata[i2])
-  }
-  output$fed<-renderUI({ 
-    
-    if(change>0)
+  output$ratings<-renderText({
+    if(input$symb=="ola"||input$symb=="OLA")
     {
-      l1<-img(src="bull.png",style="border-radius:100px;")
-      l2<-br() 
-      l3<-"Positive Outlook"
-      l<-list(l1,l2,l3)
-      l
+      4.1
     }
     else
     {
-      l1<-img(src="bear.png",style="border-radius:100px;")
-      l2<-br() 
-      l3<-"Cautious Outlook"
-      l<-list(l1,l2,l3)
-      l
-    }
-  })
-  
-  output$op<-renderText({
-    
-    if(change>0)
-    {
-      op<-"
-The Federal Reserve has decided that the economy is going strong and can take an increase in interest rates. 
-Now is probably a good time to be aggressive and chase higher returns."
-      op
-    }
-    else
-    {
-      op<-"The Federal Reserve has decided that the economy is a bit sluggish and has decreased the interest rates in hopes of boosting the flagging economy.
-It's better to take a conservative approach aimed at minimizing risk.  "
-      op
+      4.3
     }
     
   })
-  
-  output$fedplot <- renderPlot({
-    
-      
-    
-    chartSeries(feddata, 
-                type = "line", log.scale = input$log, TA = NULL, main="Effective Federal Funds Rate")
-    
-  })
-  
-  output$plot <- renderPlot({
-    data <- getSymbols(input$symb1, src = "yahoo", 
-                       from = input$dates[1],
-                       to = input$dates[2],
-                       auto.assign = FALSE)
-    
-    chartSeries(data, 
-                type = "line", log.scale = input$log, TA = NULL)
-  })
- 
- output$sel <- renderUI({
-   w <- ""
-   for(i in 1:length(input$equity)) {
-     w <- paste(w, numericInput(paste(i), paste(input$equity[[i]], sep = " "), value = input[[sprintf("%d",i)]]))
-     w<-paste(w,br())
-   }
-   HTML(w)
- })
- 
- output$mod<-renderPlot({
-   #modlist<-c()
-   #sum<-0
-  # for(i in 1:length(input$equity)) {
-   #  modlist<-c(modlist,as.numeric(input[[paste(i)]]))
-     
-   #}
-   t<-c("AAPL","IBM","GS","INTC","MS")
-   va<-c(.2642,.2412,.1231,.1486,.2229)
-   ret<<-pfReturns.plot(t, input$newdate,va)
- })
- 
- #fun<-reactive({
- #  print(paste(ret))
- #})
-# output$returns<-renderUI({
-#   fun()
- #})
-}
-  )
+})
